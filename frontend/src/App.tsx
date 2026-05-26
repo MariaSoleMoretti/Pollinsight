@@ -63,7 +63,6 @@ export default function App() {
               totalBees={d.total_bees}
               temp={d.env_data.temp}
               humidity={d.env_data.humidity}
-              healthScore={d.hive_health_score}
             />
 
             {/* Activity Chart */}
