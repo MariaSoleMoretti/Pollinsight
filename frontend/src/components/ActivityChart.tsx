@@ -1,9 +1,17 @@
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const W = 800;
-const H = 260;
-const PAD = { top: 24, right: 24, bottom: 36, left: 52 };
+const H = 280;
+const PAD = { top: 40, right: 24, bottom: 36, left: 52 };
 const INNER_W = W - PAD.left - PAD.right;
 const INNER_H = H - PAD.top - PAD.bottom;
+
+// Time slots: [startHour, endHour, label, color, textColor]
+const TIME_SLOTS: [number, number, string, string, string][] = [
+  [6, 11, 'Early Morning to Mid-Day', '#fef9e7', '#c98a00'],
+  [14, 16, 'Mid-Afternoon', '#fef3c7', '#b07700'],
+  [16, 19, "Queen's Flight Window", '#fde8c8', '#b85c00'],
+  [19, 24, 'Evening & Night', '#dce8f5', '#5a88b5'],
+];
 
 function smooth(points: [number, number][]): string {
   if (points.length < 2) return '';
@@ -19,10 +27,11 @@ function smooth(points: [number, number][]): string {
 
 interface ActivityChartProps {
   data: number[];
+  previousData?: number[];
 }
 
-export default function ActivityChart({ data }: ActivityChartProps) {
-  const maxVal = Math.max(...data, 1);
+export default function ActivityChart({ data, previousData }: ActivityChartProps) {
+  const maxVal = Math.max(...data, ...(previousData ?? []), 1);
   const xStep = INNER_W / (data.length - 1);
 
   const pts: [number, number][] = data.map((v, i) => [
@@ -30,17 +39,16 @@ export default function ActivityChart({ data }: ActivityChartProps) {
     PAD.top + INNER_H - (v / maxVal) * INNER_H,
   ]);
 
+  const prevPts: [number, number][] | null = previousData
+    ? previousData.map((v, i) => [
+        PAD.left + i * xStep,
+        PAD.top + INNER_H - (v / maxVal) * INNER_H,
+      ])
+    : null;
+
   const linePath = smooth(pts);
   const areaPath = `${linePath} L ${pts[pts.length - 1][0]} ${PAD.top + INNER_H} L ${pts[0][0]} ${PAD.top + INNER_H} Z`;
-
-  // Night bands: 0-6 and 20-24
-  const nightLeft1 = PAD.left;
-  const nightRight1 = PAD.left + 6 * xStep;
-  const nightLeft2 = PAD.left + 20 * xStep;
-  const nightRight2 = PAD.left + 23 * xStep;
-
-  const dayLeft = PAD.left + 6 * xStep;
-  const dayRight = PAD.left + 20 * xStep;
+  const prevLinePath = prevPts ? smooth(prevPts) : null;
 
   const yTicks = [0, 300, 600, 900, 1200].filter(v => v <= maxVal + 200);
 
@@ -56,14 +64,20 @@ export default function ActivityChart({ data }: ActivityChartProps) {
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-          <span className="flex items-center gap-1.5 text-gray-400">
-            <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: '#b8cce8' }} />
-            Night
+          <span className="flex items-center gap-1.5 text-gray-500">
+            <svg width="20" height="10" viewBox="0 0 20 10">
+              <line x1="0" y1="5" x2="20" y2="5" stroke="#5b8dee" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+            Today
           </span>
-          <span className="flex items-center gap-1.5 text-gray-400">
-            <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: '#fde99c' }} />
-            Day
-          </span>
+          {prevLinePath && (
+            <span className="flex items-center gap-1.5 text-gray-400">
+              <svg width="20" height="10" viewBox="0 0 20 10">
+                <line x1="0" y1="5" x2="20" y2="5" stroke="#b0b8c1" strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" />
+              </svg>
+              Yesterday
+            </span>
+          )}
         </div>
       </div>
 
@@ -76,41 +90,37 @@ export default function ActivityChart({ data }: ActivityChartProps) {
         >
           <defs>
             <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#bc84ee" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#bc84ee" stopOpacity="0.02" />
+              <stop offset="0%" stopColor="#5b8dee" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#5b8dee" stopOpacity="0.02" />
             </linearGradient>
             <clipPath id="chartClip">
               <rect x={PAD.left} y={PAD.top} width={INNER_W} height={INNER_H} />
             </clipPath>
           </defs>
 
-          {/* Night band left */}
-          <rect
-            x={nightLeft1} y={PAD.top}
-            width={nightRight1 - nightLeft1}
-            height={INNER_H}
-            fill="#dce8f5"
-            opacity="0.5"
-            clipPath="url(#chartClip)"
-          />
-          {/* Day band */}
-          <rect
-            x={dayLeft} y={PAD.top}
-            width={dayRight - dayLeft}
-            height={INNER_H}
-            fill="#fef3c7"
-            opacity="0.55"
-            clipPath="url(#chartClip)"
-          />
-          {/* Night band right */}
-          <rect
-            x={nightLeft2} y={PAD.top}
-            width={nightRight2 - nightLeft2}
-            height={INNER_H}
-            fill="#dce8f5"
-            opacity="0.5"
-            clipPath="url(#chartClip)"
-          />
+          {/* Time slot bands */}
+          {TIME_SLOTS.map(([start, end, label, fill, textColor]) => {
+            const x = PAD.left + start * xStep;
+            const w = (end - start) * xStep;
+            const midX = x + w / 2;
+            return (
+              <g key={label}>
+                <rect x={x} y={PAD.top} width={w} height={INNER_H} fill={fill} opacity="0.7" clipPath="url(#chartClip)" />
+                <text
+                  x={midX}
+                  y={PAD.top - 6}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fill={textColor}
+                  fontWeight="600"
+                  style={{ fontFamily: 'Afacad Flux, sans-serif' }}
+                >
+                  {label}
+                </text>
+                <line x1={x} y1={PAD.top - 14} x2={x + w} y2={PAD.top - 14} stroke={textColor} strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+              </g>
+            );
+          })}
 
           {/* Y gridlines */}
           {yTicks.map(v => {
@@ -134,14 +144,29 @@ export default function ActivityChart({ data }: ActivityChartProps) {
             );
           })}
 
+          {/* Yesterday line (behind today) */}
+          {prevLinePath && (
+            <path
+              d={prevLinePath}
+              fill="none"
+              stroke="#b0b8c1"
+              strokeWidth="2"
+              strokeDasharray="6 4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              clipPath="url(#chartClip)"
+              opacity="0.7"
+            />
+          )}
+
           {/* Area fill */}
           <path d={areaPath} fill="url(#areaGrad)" clipPath="url(#chartClip)" />
 
-          {/* Line */}
+          {/* Today line */}
           <path
             d={linePath}
             fill="none"
-            stroke="#bc84ee"
+            stroke="#5b8dee"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -151,7 +176,7 @@ export default function ActivityChart({ data }: ActivityChartProps) {
           {/* Data dots at peaks */}
           {pts.map(([x, y], i) =>
             data[i] > 300 ? (
-              <circle key={i} cx={x} cy={y} r="4" fill="#bc84ee" stroke="white" strokeWidth="2" />
+              <circle key={i} cx={x} cy={y} r="4" fill="#5b8dee" stroke="white" strokeWidth="2" />
             ) : null
           )}
 
@@ -173,16 +198,6 @@ export default function ActivityChart({ data }: ActivityChartProps) {
             );
           })}
 
-          {/* Period labels */}
-          <text x={PAD.left + 3 * xStep} y={PAD.top + 16} textAnchor="middle" fontSize="10" fill="#7ba7d0" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            Night
-          </text>
-          <text x={PAD.left + 13 * xStep} y={PAD.top + 16} textAnchor="middle" fontSize="10" fill="#d4a000" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            Day
-          </text>
-          <text x={PAD.left + 21.5 * xStep} y={PAD.top + 16} textAnchor="middle" fontSize="10" fill="#7ba7d0" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            Dusk
-          </text>
         </svg>
       </div>
     </div>
