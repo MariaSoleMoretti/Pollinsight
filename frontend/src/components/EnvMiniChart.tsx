@@ -44,7 +44,7 @@ export default function EnvMiniChart({ data, label, unit, color, bgColor, gradId
   const yTicks = [minVal, (minVal + maxVal) / 2, maxVal];
 
   return (
-    <div className="flex-1 rounded-[28px] p-5 shadow-sm" style={{ backgroundColor: bgColor }}>
+    <div className="flex-1 rounded-[10px] p-5 shadow-sm" style={{ backgroundColor: bgColor }}>
       <div className="flex items-center justify-between mb-1">
         <p className="font-semibold text-gray-700 text-base" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
           {label}
