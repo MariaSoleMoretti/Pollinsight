@@ -24,7 +24,7 @@ function StatCard({
 }) {
   return (
     <div
-      className="flex-1 rounded-[28px] p-6 shadow-sm flex items-center gap-4 min-w-0"
+      className="flex-1 rounded-[10px] p-6 shadow-sm flex items-center gap-4 min-w-0"
       style={{ backgroundColor: bg }}
     >
       <div className="rounded-2xl p-3 flex-shrink-0" style={{ backgroundColor: iconBg }}>
