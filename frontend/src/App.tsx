@@ -96,7 +96,7 @@ export default function App() {
 
             {/* Device health */}
             <div
-              className="rounded-[28px] px-6 py-4 shadow-sm"
+              className="rounded-[10px] px-6 py-4 shadow-sm"
               style={{ backgroundColor: 'white' }}
             >
               <DeviceHealth
