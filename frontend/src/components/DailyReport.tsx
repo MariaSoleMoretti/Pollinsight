@@ -1,7 +1,7 @@
 import VarroaAlert from './VarroaAlert';
 import EnvMiniChart from './EnvMiniChart';
 import { apiaryData as d } from '../data/mockData';
-import { Bug, TrendingUp, TriangleAlert as AlertTriangle } from 'lucide-react';
+import { Bug, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function DailyReport() {
   const todayStr = new Date().toLocaleDateString('en-US', {
