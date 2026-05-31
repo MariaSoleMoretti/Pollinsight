@@ -29,7 +29,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             fontFamily: 'Comfortaa, sans-serif',
           }}
         >
-          PolliSight
+          PollinSight
         </span>
       </div>
 
@@ -37,11 +37,10 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
       <nav className="flex flex-col gap-3 flex-1 w-full px-2">
         <button
           onClick={() => onViewChange('realtime')}
-          className={`group relative flex items-center justify-start gap-3 w-full rounded-2xl py-3 px-3 transition-all ${
-            currentView === 'realtime'
+          className={`group relative flex items-center justify-start gap-3 w-full rounded-2xl py-3 px-3 transition-all ${currentView === 'realtime'
               ? 'shadow-sm'
               : 'hover:bg-gray-50'
-          }`}
+            }`}
           style={{
             backgroundColor: currentView === 'realtime' ? '#f5f0f8' : 'transparent',
           }}
@@ -66,11 +65,10 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
 
         <button
           onClick={() => onViewChange('daily')}
-          className={`group relative flex items-center justify-start gap-3 w-full rounded-2xl py-3 px-3 transition-all ${
-            currentView === 'daily'
+          className={`group relative flex items-center justify-start gap-3 w-full rounded-2xl py-3 px-3 transition-all ${currentView === 'daily'
               ? 'shadow-sm'
               : 'hover:bg-gray-50'
-          }`}
+            }`}
           style={{
             backgroundColor: currentView === 'daily' ? '#f5f0f8' : 'transparent',
           }}
