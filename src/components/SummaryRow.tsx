@@ -46,15 +46,15 @@ export default function SummaryRow({ totalBees, temp, humidity }: SummaryRowProp
     <div className="flex gap-4 flex-wrap md:flex-nowrap">
       <StatCard
         icon={<Activity size={24} strokeWidth={2.5} />}
-        label="Total Activity Today"
-        value={`${totalBees.toLocaleString()} bees`}
+        label="Attività Totale Oggi"
+        value={`${totalBees.toLocaleString()} api`}
         bg="#f5f0f8"
         iconBg="#6B2D8C"
         iconColor="white"
       />
       <StatCard
         icon={<Thermometer size={24} strokeWidth={2.5} />}
-        label="Temperature"
+        label="Temperatura"
         value={`${temp}°C`}
         bg="#fffbd9"
         iconBg="#FFD700"
@@ -62,7 +62,7 @@ export default function SummaryRow({ totalBees, temp, humidity }: SummaryRowProp
       />
       <StatCard
         icon={<Droplets size={24} strokeWidth={2.5} />}
-        label="Humidity"
+        label="Umidità"
         value={`${humidity}%`}
         bg="#e6faf5"
         iconBg="#20C997"

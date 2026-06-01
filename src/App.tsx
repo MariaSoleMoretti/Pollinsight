@@ -11,8 +11,7 @@ import { MapPin } from 'lucide-react';
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('realtime');
 
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', {
+  const dateStr = new Date().toLocaleDateString('it-IT', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -42,7 +41,7 @@ export default function App() {
                   className="font-bold text-gray-800 text-3xl mt-1"
                   style={{ fontFamily: 'Comfortaa, sans-serif' }}
                 >
-                  Good morning, Marco
+                  Buongiorno, Marco
                 </h2>
               </div>
               <div
@@ -85,7 +84,7 @@ export default function App() {
             <div className="flex gap-4 flex-wrap md:flex-nowrap">
               <EnvMiniChart
                 data={d.hourly_temp}
-                label="Temperature"
+                label="Temperatura"
                 unit="°C"
                 color="#6B2D8C"
                 bgColor="#f5f0f8"
@@ -94,7 +93,7 @@ export default function App() {
               />
               <EnvMiniChart
                 data={d.hourly_humidity}
-                label="Humidity"
+                label="Umidità"
                 unit="%"
                 color="#20C997"
                 bgColor="#e6faf5"

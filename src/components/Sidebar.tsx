@@ -44,7 +44,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
           style={{
             backgroundColor: currentView === 'realtime' ? '#f5f0f8' : 'transparent',
           }}
-          title="Realtime Metrics"
+          title="Metriche in Tempo Reale"
         >
           <Activity
             size={20}
@@ -59,7 +59,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               fontFamily: 'Afacad Flux, sans-serif',
             }}
           >
-            Realtime
+            Tempo Reale
           </span>
         </button>
 
@@ -72,7 +72,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
           style={{
             backgroundColor: currentView === 'daily' ? '#f5f0f8' : 'transparent',
           }}
-          title="Daily Report"
+          title="Rapporto Giornaliero"
         >
           <FileText
             size={20}
@@ -87,7 +87,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               fontFamily: 'Afacad Flux, sans-serif',
             }}
           >
-            Daily
+            Giornaliero
           </span>
         </button>
       </nav>

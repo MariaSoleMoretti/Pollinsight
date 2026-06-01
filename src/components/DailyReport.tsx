@@ -4,7 +4,7 @@ import { apiaryData as d } from '../data/mockData';
 import { Bug, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function DailyReport() {
-  const todayStr = new Date().toLocaleDateString('en-US', {
+  const todayStr = new Date().toLocaleDateString('it-IT', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -34,7 +34,7 @@ export default function DailyReport() {
           className="font-bold text-gray-800 text-3xl mt-1"
           style={{ fontFamily: 'Comfortaa, sans-serif' }}
         >
-          Daily Report
+          Rapporto Giornaliero
         </h2>
       </div>
 
@@ -60,13 +60,13 @@ export default function DailyReport() {
               className="font-bold text-gray-800 text-lg"
               style={{ fontFamily: 'Comfortaa, sans-serif' }}
             >
-              Varroa Detection
+              Rilevamento Varroa
             </h3>
             <p
               className="text-gray-400 text-sm mt-0.5"
               style={{ fontFamily: 'Afacad Flux, sans-serif' }}
             >
-              Weekly mite monitoring summary
+              Riepilogo monitoraggio acari settimanale
             </p>
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function DailyReport() {
                   className="text-xs text-gray-400"
                   style={{ fontFamily: 'Afacad Flux, sans-serif' }}
                 >
-                  {scan.day}
+                  {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'][['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(scan.day)]}
                 </span>
               </div>
             );
@@ -105,16 +105,16 @@ export default function DailyReport() {
             <>
               <AlertTriangle size={16} strokeWidth={2.5} style={{ color: '#ff823a', marginTop: 2 }} />
               <p className="text-sm text-gray-600" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-                <strong className="text-gray-800">Action required:</strong> Varroa mites detected
-                in latest scan. Treatment recommended within 48 hours.
+                <strong className="text-gray-800">Azione richiesta:</strong> Acari varroa rilevati
+                nell'ultimo scan. Trattamento consigliato entro 48 ore.
               </p>
             </>
           ) : (
             <>
               <TrendingUp size={16} strokeWidth={2.5} style={{ color: '#22c55e', marginTop: 2 }} />
               <p className="text-sm text-gray-600" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-                <strong className="text-gray-800">All clear:</strong> No varroa mites detected this
-                week. Continue regular monitoring.
+                <strong className="text-gray-800">Tutto bene:</strong> Nessun acaro varroa rilevato questa
+                settimana. Continuare il monitoraggio regolare.
               </p>
             </>
           )}
@@ -138,13 +138,13 @@ export default function DailyReport() {
               className="font-bold text-gray-800 text-lg"
               style={{ fontFamily: 'Comfortaa, sans-serif' }}
             >
-              Environmental Trends
+              Tendenze Ambientali
             </h3>
             <p
               className="text-gray-400 text-sm mt-0.5"
               style={{ fontFamily: 'Afacad Flux, sans-serif' }}
             >
-              24-hour temperature and humidity patterns
+              Modelli di temperatura e umidità nelle 24 ore
             </p>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function DailyReport() {
         <div className="flex gap-4 flex-wrap md:flex-nowrap">
           <EnvMiniChart
             data={d.hourly_temp}
-            label="Temperature"
+            label="Temperatura"
             unit="°C"
             color="#6B2D8C"
             bgColor="#f5f0f8"
@@ -161,7 +161,7 @@ export default function DailyReport() {
           />
           <EnvMiniChart
             data={d.hourly_humidity}
-            label="Humidity"
+            label="Umidità"
             unit="%"
             color="#20C997"
             bgColor="#e6faf5"
@@ -180,7 +180,7 @@ export default function DailyReport() {
               className="text-xs text-gray-400 mb-1"
               style={{ fontFamily: 'Afacad Flux, sans-serif' }}
             >
-              Avg Temp
+              Temp Media
             </p>
             <p
               className="font-bold text-xl text-gray-800"
@@ -200,7 +200,7 @@ export default function DailyReport() {
               className="text-xs text-gray-400 mb-1"
               style={{ fontFamily: 'Afacad Flux, sans-serif' }}
             >
-              Max Temp
+              Temp Max
             </p>
             <p
               className="font-bold text-xl"
@@ -217,7 +217,7 @@ export default function DailyReport() {
               className="text-xs text-gray-400 mb-1"
               style={{ fontFamily: 'Afacad Flux, sans-serif' }}
             >
-              Avg Humidity
+              Umidità Media
             </p>
             <p
               className="font-bold text-xl"
@@ -238,7 +238,7 @@ export default function DailyReport() {
               className="text-xs text-gray-400 mb-1"
               style={{ fontFamily: 'Afacad Flux, sans-serif' }}
             >
-              Min Humidity
+              Umidità Min
             </p>
             <p
               className="font-bold text-xl"

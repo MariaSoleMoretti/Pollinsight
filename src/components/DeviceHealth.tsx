@@ -10,7 +10,7 @@ export default function DeviceHealth({ battery, solarCharging, signal }: DeviceH
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
       <p className="text-gray-400 text-xs" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-        Last sync: today at 06:14 AM
+        Ultimo sincronismo: oggi alle 06:14
       </p>
       <div className="flex items-center gap-5">
         <div className="flex items-center gap-2">
@@ -22,7 +22,7 @@ export default function DeviceHealth({ battery, solarCharging, signal }: DeviceH
               {battery}%
             </p>
             <p className="text-xs text-gray-400 leading-none mt-0.5" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              {solarCharging ? 'Solar charging' : 'On battery'}
+              {solarCharging ? 'Carica solare' : 'Su batteria'}
             </p>
           </div>
         </div>
@@ -33,10 +33,10 @@ export default function DeviceHealth({ battery, solarCharging, signal }: DeviceH
           </div>
           <div>
             <p className="text-xs font-semibold text-gray-700 leading-none" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              {signal} Active
+              {signal} Attivo
             </p>
             <p className="text-xs text-gray-400 leading-none mt-0.5" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              Connection stable
+              Connessione stabile
             </p>
           </div>
         </div>
