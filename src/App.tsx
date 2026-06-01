@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Sidebar, { ViewType } from './components/Sidebar';
 import HealthIndicator from './components/HealthIndicator';
 import ActivityChart from './components/ActivityChart';
-import EnvMiniChart from './components/EnvMiniChart';
 import DeviceHealth from './components/DeviceHealth';
 import DailyReport from './components/DailyReport';
 import { apiaryData as d } from './data/mockData';
@@ -79,28 +78,6 @@ export default function App() {
               data={d.hourly_activity}
               previousData={d.hourly_activity_yesterday}
             />
-
-            {/* Env mini charts */}
-            <div className="flex gap-4 flex-wrap md:flex-nowrap">
-              <EnvMiniChart
-                data={d.hourly_temp}
-                label="Temperatura"
-                unit="°C"
-                color="#6B2D8C"
-                bgColor="#f5f0f8"
-                gradId="tempGrad"
-                gradStart="#6B2D8C"
-              />
-              <EnvMiniChart
-                data={d.hourly_humidity}
-                label="Umidità"
-                unit="%"
-                color="#20C997"
-                bgColor="#e6faf5"
-                gradId="humidGrad"
-                gradStart="#20C997"
-              />
-            </div>
           </main>
         ) : (
           <DailyReport />

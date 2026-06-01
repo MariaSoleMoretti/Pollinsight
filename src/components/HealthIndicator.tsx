@@ -44,78 +44,78 @@ export default function HealthIndicator({ totalBees, temp, humidity }: HealthInd
   }
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      {/* Left Column - Vertical Cards */}
-      <div className="flex flex-col gap-4">
-        {/* Total Bees Card */}
-        <div
-          className="rounded-[10px] p-6 shadow-sm"
-          style={{ backgroundColor: '#f5f0f8' }}
-        >
-          <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            Attività totale
-          </p>
-          <p
-            className="font-bold text-4xl"
-            style={{
-              color: '#6B2D8C',
-              fontFamily: 'Comfortaa, sans-serif',
-            }}
+    <div>
+      <div className="grid grid-cols-3 gap-6">
+        {/* Left Column - Vertical Cards */}
+        <div className="flex flex-col gap-4">
+          {/* Total Bees Card */}
+          <div
+            className="rounded-[10px] p-6 shadow-sm"
+            style={{ backgroundColor: '#f5f0f8' }}
           >
-            {totalBees.toLocaleString()}
-          </p>
-          <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            {isActivityGood ? 'Attività: Buona' : 'Attività: Bassa'}
-          </p>
+            <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+              Attività totale
+            </p>
+            <p
+              className="font-bold text-4xl"
+              style={{
+                color: '#6B2D8C',
+                fontFamily: 'Comfortaa, sans-serif',
+              }}
+            >
+              {totalBees.toLocaleString()}
+            </p>
+            <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+              {isActivityGood ? 'Attività: Buona' : 'Attività: Bassa'}
+            </p>
+          </div>
+
+          {/* Temperature Card */}
+          <div
+            className="rounded-[10px] p-6 shadow-sm"
+            style={{ backgroundColor: '#fffbd9' }}
+          >
+            <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+              Temperatura
+            </p>
+            <p
+              className="font-bold text-4xl"
+              style={{
+                color: '#FFB800',
+                fontFamily: 'Comfortaa, sans-serif',
+              }}
+            >
+              {temp.toFixed(1)}°C
+            </p>
+            <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+              {isTempOptimal ? 'Stato: Ottimale' : temp > 36 ? 'Stato: Calda' : 'Stato: Fresca'}
+            </p>
+          </div>
+
+          {/* Humidity Card */}
+          <div
+            className="rounded-[10px] p-6 shadow-sm"
+            style={{ backgroundColor: '#e6faf5' }}
+          >
+            <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+              Umidità
+            </p>
+            <p
+              className="font-bold text-4xl"
+              style={{
+                color: '#20C997',
+                fontFamily: 'Comfortaa, sans-serif',
+              }}
+            >
+              {humidity}%
+            </p>
+            <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+              {isHumidityOptimal ? 'Stato: Ottimale' : humidity > 60 ? 'Stato: Alta' : 'Stato: Bassa'}
+            </p>
+          </div>
         </div>
 
-        {/* Temperature Card */}
-        <div
-          className="rounded-[10px] p-6 shadow-sm"
-          style={{ backgroundColor: '#fffbd9' }}
-        >
-          <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            Temperatura
-          </p>
-          <p
-            className="font-bold text-4xl"
-            style={{
-              color: '#FFB800',
-              fontFamily: 'Comfortaa, sans-serif',
-            }}
-          >
-            {temp.toFixed(1)}°C
-          </p>
-          <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            {isTempOptimal ? 'Stato: Ottimale' : temp > 36 ? 'Stato: Calda' : 'Stato: Fresca'}
-          </p>
-        </div>
-
-        {/* Humidity Card */}
-        <div
-          className="rounded-[10px] p-6 shadow-sm"
-          style={{ backgroundColor: '#e6faf5' }}
-        >
-          <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            Umidità
-          </p>
-          <p
-            className="font-bold text-4xl"
-            style={{
-              color: '#20C997',
-              fontFamily: 'Comfortaa, sans-serif',
-            }}
-          >
-            {humidity}%
-          </p>
-          <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-            {isHumidityOptimal ? 'Stato: Ottimale' : humidity > 60 ? 'Stato: Alta' : 'Stato: Bassa'}
-          </p>
-        </div>
-      </div>
-
-      {/* Right Column - Relationship Card */}
-      {alertType && (
+        {/* Right Column - Relationship Card */}
         <div
           className="rounded-[10px] p-6 shadow-sm col-span-2"
           style={{ backgroundColor: alertBg }}
@@ -144,7 +144,7 @@ export default function HealthIndicator({ totalBees, temp, humidity }: HealthInd
             {alertMessage}
           </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
