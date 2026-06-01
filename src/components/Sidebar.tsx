@@ -59,7 +59,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               fontFamily: 'Afacad Flux, sans-serif',
             }}
           >
-            Tempo Reale
+            Attività
           </span>
         </button>
 
@@ -87,7 +87,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               fontFamily: 'Afacad Flux, sans-serif',
             }}
           >
-            Giornaliero
+            Report
           </span>
         </button>
       </nav>
