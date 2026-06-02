@@ -45,103 +45,71 @@ export default function HealthIndicator({ totalBees, temp, humidity }: HealthInd
 
   return (
     <div>
-      <div className="grid grid-cols-3 gap-6">
-        {/* Left Column - Vertical Cards */}
-        <div className="flex flex-col gap-4">
-          {/* Total Bees Card */}
-          <div
-            className="rounded-[10px] p-6 shadow-sm"
-            style={{ backgroundColor: '#f5f0f8' }}
-          >
-            <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              Attività totale
-            </p>
-            <p
-              className="font-bold text-4xl"
-              style={{
-                color: '#6B2D8C',
-                fontFamily: 'Comfortaa, sans-serif',
-              }}
-            >
-              {totalBees.toLocaleString()}
-            </p>
-            <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              {isActivityGood ? 'Attività: Buona' : 'Attività: Bassa'}
-            </p>
-          </div>
-
-          {/* Temperature Card */}
-          <div
-            className="rounded-[10px] p-6 shadow-sm"
-            style={{ backgroundColor: '#fffbd9' }}
-          >
-            <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              Temperatura
-            </p>
-            <p
-              className="font-bold text-4xl"
-              style={{
-                color: '#FFB800',
-                fontFamily: 'Comfortaa, sans-serif',
-              }}
-            >
-              {temp.toFixed(1)}°C
-            </p>
-            <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              {isTempOptimal ? 'Stato: Ottimale' : temp > 36 ? 'Stato: Calda' : 'Stato: Fresca'}
-            </p>
-          </div>
-
-          {/* Humidity Card */}
-          <div
-            className="rounded-[10px] p-6 shadow-sm"
-            style={{ backgroundColor: '#e6faf5' }}
-          >
-            <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              Umidità
-            </p>
-            <p
-              className="font-bold text-4xl"
-              style={{
-                color: '#20C997',
-                fontFamily: 'Comfortaa, sans-serif',
-              }}
-            >
-              {humidity}%
-            </p>
-            <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-              {isHumidityOptimal ? 'Stato: Ottimale' : humidity > 60 ? 'Stato: Alta' : 'Stato: Bassa'}
-            </p>
-          </div>
-        </div>
-
-        {/* Right Column - Relationship Card */}
+      {/* Left Column - Vertical Cards */}
+      <div className="flex flex-row gap-6">
+        {/* Total Bees Card */}
         <div
-          className="rounded-[10px] p-6 shadow-sm col-span-2"
-          style={{ backgroundColor: alertBg }}
+          className="rounded-[10px] p-6 shadow-sm"
+          style={{ backgroundColor: '#f5f0f8' }}
         >
-          <div className="flex items-start gap-3 mb-4">
-            <div style={{ color: alertColor, display: 'flex', flexShrink: 0 }}>
-              {alertIcon}
-            </div>
-            <h3
-              className="font-bold text-lg"
-              style={{
-                color: alertColor,
-                fontFamily: 'Comfortaa, sans-serif',
-              }}
-            >
-              {alertType === 'success' ? 'Relazione dati: Alveare Sano' : alertType === 'critical' ? 'Relazione dati: Condizioni Critiche' : 'Relazione dati: Attenzione Richiesta'}
-            </h3>
-          </div>
+          <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+            Attività totale
+          </p>
           <p
-            className="text-sm leading-relaxed"
+            className="font-bold text-4xl"
             style={{
-              color: '#374151',
-              fontFamily: 'Afacad Flux, sans-serif',
+              color: '#6B2D8C',
+              fontFamily: 'Comfortaa, sans-serif',
             }}
           >
-            {alertMessage}
+            {totalBees.toLocaleString()}
+          </p>
+          <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+            {isActivityGood ? 'Attività: Buona' : 'Attività: Bassa'}
+          </p>
+        </div>
+
+        {/* Temperature Card */}
+        <div
+          className="rounded-[10px] p-6 shadow-sm"
+          style={{ backgroundColor: '#fffbd9' }}
+        >
+          <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+            Temperatura
+          </p>
+          <p
+            className="font-bold text-4xl"
+            style={{
+              color: '#FFB800',
+              fontFamily: 'Comfortaa, sans-serif',
+            }}
+          >
+            {temp.toFixed(1)}°C
+          </p>
+          <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+            {isTempOptimal ? 'Stato: Ottimale' : temp > 36 ? 'Stato: Calda' : 'Stato: Fresca'}
+          </p>
+        </div>
+
+        {/* Humidity Card */}
+        <div
+          className="rounded-[10px] p-6 shadow-sm"
+          style={{ backgroundColor: '#e6faf5' }}
+        >
+          <p className="text-gray-600 text-sm font-medium mb-4" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+            Umidità
+          </p>
+          <p
+            className="font-bold text-4xl"
+            style={{
+              color: '#20C997',
+              fontFamily: 'Comfortaa, sans-serif',
+            }}
+          >
+            {humidity}%
+          </p>
+          <p className="text-xs text-gray-500 mt-3" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+            {isHumidityOptimal ? 'Stato: Ottimale' : humidity > 60 ? 'Stato: Alta' : 'Stato: Bassa'}
           </p>
         </div>
       </div>

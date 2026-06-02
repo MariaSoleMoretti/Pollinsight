@@ -35,16 +35,20 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
   const maxVal = Math.max(...data, ...(previousData ?? []), 1);
   const xStep = INNER_W / (data.length - 1);
 
-  const pts: [number, number][] = data.map((v, i) => [
+  // Only show data up to the current hour to avoid misleading empty points in the future
+  // To change when having real-time data streaming in
+  const currentDataToDisplay = data.slice(0, currentHour + 1);
+
+  const pts: [number, number][] = currentDataToDisplay.map((v, i) => [
     PAD.left + i * xStep,
     PAD.top + INNER_H - (v / maxVal) * INNER_H,
   ]);
 
   const prevPts: [number, number][] | null = previousData
     ? previousData.map((v, i) => [
-        PAD.left + i * xStep,
-        PAD.top + INNER_H - (v / maxVal) * INNER_H,
-      ])
+      PAD.left + i * xStep,
+      PAD.top + INNER_H - (v / maxVal) * INNER_H,
+    ])
     : null;
 
   const linePath = smooth(pts);
