@@ -1,16 +1,15 @@
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const W = 800;
-const H = 280;
-const PAD = { top: 40, right: 24, bottom: 36, left: 52 };
+const H = 300;
+const PAD = { top: 48, right: 24, bottom: 36, left: 52 };
 const INNER_W = W - PAD.left - PAD.right;
 const INNER_H = H - PAD.top - PAD.bottom;
 
-// Time slots: [startHour, endHour, label, color, textColor]
-const TIME_SLOTS: [number, number, string, string, string][] = [
-  [6, 11, 'Early Morning to Mid-Day', '#fef9e7', '#c98a00'],
-  [14, 16, 'Mid-Afternoon', '#fef3c7', '#b07700'],
-  [16, 19, "Queen's Flight Window", '#fde8c8', '#b85c00'],
-  [19, 24, 'Evening & Night', '#dce8f5', '#5a88b5'],
+const TIME_SLOTS: [number, number, string, string, string, boolean][] = [
+  [6,  11, 'Mattina – Mezzogiorno',        '#fef9e7', '#b45309', false],
+  [14, 16, 'Primo Pomeriggio',              '#fef3c7', '#a16207', false],
+  [16, 19, 'Finestra di Volo della Regina', '#fde8c8', '#b45309', true],
+  [19, 24, 'Sera',                          '#dce8f5', '#3b82f6', false],
 ];
 
 function smooth(points: [number, number][]): string {
@@ -35,8 +34,6 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
   const maxVal = Math.max(...data, ...(previousData ?? []), 1);
   const xStep = INNER_W / (data.length - 1);
 
-  // Only show data up to the current hour to avoid misleading empty points in the future
-  // To change when having real-time data streaming in
   const currentDataToDisplay = data.slice(0, currentHour + 1);
 
   const pts: [number, number][] = currentDataToDisplay.map((v, i) => [
@@ -46,19 +43,24 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
 
   const prevPts: [number, number][] | null = previousData
     ? previousData.map((v, i) => [
-      PAD.left + i * xStep,
-      PAD.top + INNER_H - (v / maxVal) * INNER_H,
-    ])
+        PAD.left + i * xStep,
+        PAD.top + INNER_H - (v / maxVal) * INNER_H,
+      ])
     : null;
 
   const linePath = smooth(pts);
-  const areaPath = `${linePath} L ${pts[pts.length - 1][0]} ${PAD.top + INNER_H} L ${pts[0][0]} ${PAD.top + INNER_H} Z`;
+  const areaPath =
+    pts.length > 1
+      ? `${linePath} L ${pts[pts.length - 1][0]} ${PAD.top + INNER_H} L ${pts[0][0]} ${PAD.top + INNER_H} Z`
+      : '';
   const prevLinePath = prevPts ? smooth(prevPts) : null;
 
   const yTicks = [0, 300, 600, 900, 1200].filter(v => v <= maxVal + 200);
 
+  const currentX = PAD.left + currentHour * xStep;
+
   return (
-    <div className="rounded-[10px] p-6 shadow-sm" style={{ backgroundColor: 'white' }}>
+    <div className="rounded-2xl p-6 shadow-sm" style={{ backgroundColor: 'white' }}>
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-bold text-gray-800 text-lg" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
@@ -95,7 +97,7 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
         >
           <defs>
             <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6B2D8C" stopOpacity="0.35" />
+              <stop offset="0%" stopColor="#6B2D8C" stopOpacity="0.3" />
               <stop offset="100%" stopColor="#6B2D8C" stopOpacity="0.02" />
             </linearGradient>
             <clipPath id="chartClip">
@@ -104,25 +106,47 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
           </defs>
 
           {/* Time slot bands */}
-          {TIME_SLOTS.map(([start, end, label, fill, textColor]) => {
-            const x = PAD.left + start * xStep;
-            const w = (end - start) * xStep;
+          {TIME_SLOTS.map(([start, end, label, fill, textColor, isCrown]) => {
+            const x = PAD.left + (start as number) * xStep;
+            const w = ((end as number) - (start as number)) * xStep;
             const midX = x + w / 2;
+            const topLineY = PAD.top - 20;
+            const crownSize = 10;
+
             return (
-              <g key={label}>
-                <rect x={x} y={PAD.top} width={w} height={INNER_H} fill={fill} opacity="0.7" clipPath="url(#chartClip)" />
+              <g key={label as string}>
+                <rect
+                  x={x}
+                  y={PAD.top}
+                  width={w}
+                  height={INNER_H}
+                  fill={fill as string}
+                  opacity="0.65"
+                  clipPath="url(#chartClip)"
+                />
+                {/* Band label */}
                 <text
                   x={midX}
-                  y={PAD.top - 6}
+                  y={PAD.top - 7}
                   textAnchor="middle"
-                  fontSize="9"
-                  fill={textColor}
+                  fontSize="8.5"
+                  fill={textColor as string}
                   fontWeight="600"
                   style={{ fontFamily: 'Afacad Flux, sans-serif' }}
                 >
-                  {label}
+                  {isCrown ? `♛ ${label}` : (label as string)}
                 </text>
-                <line x1={x} y1={PAD.top - 14} x2={x + w} y2={PAD.top - 14} stroke={textColor} strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+                {/* Top indicator line */}
+                <line
+                  x1={x}
+                  y1={topLineY}
+                  x2={x + w}
+                  y2={topLineY}
+                  stroke={textColor as string}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  opacity="0.45"
+                />
               </g>
             );
           })}
@@ -149,7 +173,7 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
             );
           })}
 
-          {/* Yesterday line (behind today) */}
+          {/* Yesterday line */}
           {prevLinePath && (
             <path
               d={prevLinePath}
@@ -165,18 +189,22 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
           )}
 
           {/* Area fill */}
-          <path d={areaPath} fill="url(#areaGrad)" clipPath="url(#chartClip)" />
+          {areaPath && (
+            <path d={areaPath} fill="url(#areaGrad)" clipPath="url(#chartClip)" />
+          )}
 
           {/* Today line */}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="#6B2D8C"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            clipPath="url(#chartClip)"
-          />
+          {linePath && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#6B2D8C"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              clipPath="url(#chartClip)"
+            />
+          )}
 
           {/* Data dots at peaks */}
           {pts.map(([x, y], i) =>
@@ -188,7 +216,7 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
           {/* X axis labels */}
           {HOURS.filter(h => h % 4 === 0).map(h => {
             const x = PAD.left + h * xStep;
-            const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+            const label = h === 0 ? '00:00' : `${String(h).padStart(2, '0')}:00`;
             return (
               <text
                 key={h}
@@ -203,17 +231,27 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
             );
           })}
 
-          {/* Current hour marker */}
+          {/* Current hour vertical marker */}
           <line
-            x1={PAD.left + currentHour * xStep}
+            x1={currentX}
             y1={PAD.top}
-            x2={PAD.left + currentHour * xStep}
+            x2={currentX}
             y2={PAD.top + INNER_H}
             stroke="#6B2D8C"
-            strokeWidth="2"
+            strokeWidth="1.5"
             strokeDasharray="4 4"
-            opacity="0.5"
+            opacity="0.45"
           />
+          <text
+            x={currentX + 4}
+            y={PAD.top + 10}
+            fontSize="9"
+            fill="#6B2D8C"
+            fontWeight="600"
+            style={{ fontFamily: 'Afacad Flux, sans-serif' }}
+          >
+            Ora
+          </text>
 
         </svg>
       </div>

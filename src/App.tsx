@@ -1,72 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar, { ViewType } from './components/Sidebar';
 import HealthIndicator from './components/HealthIndicator';
 import ActivityChart from './components/ActivityChart';
 import DeviceHealth from './components/DeviceHealth';
 import DailyReport from './components/DailyReport';
 import { apiaryData as d } from './data/mockData';
-import { MapPin } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('realtime');
+  const [now, setNow] = useState(new Date());
 
-  const dateStr = new Date().toLocaleDateString('it-IT', {
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const dateStr = now.toLocaleDateString('it-IT', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
 
+  const timeStr = now.toLocaleTimeString('it-IT', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#f7f4ef' }}>
-      {/* Sidebar */}
       <Sidebar currentView={currentView} onViewChange={setCurrentView} />
 
-      {/* Main content area */}
       <div className="flex-1" style={{ marginLeft: '6rem' }}>
-
-        {/* Main Content */}
         {currentView === 'realtime' ? (
           <main className="max-w-5xl mx-auto px-4 md:px-8 pb-12 space-y-5 pt-6">
-            {/* Date + greeting */}
-            <div className="flex items-end justify-between flex-wrap gap-3">
+
+            {/* Header */}
+            <div className="flex items-start justify-between flex-wrap gap-3">
               <div>
-                <p
-                  className="text-gray-400 text-sm"
-                  style={{ fontFamily: 'Afacad Flux, sans-serif' }}
-                >
+                <p className="text-gray-400 text-sm capitalize" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
                   {dateStr}
                 </p>
-                <h2
-                  className="font-bold text-gray-800 text-3xl mt-1"
+                <h1
+                  className="font-bold text-gray-800 text-3xl mt-1 leading-tight"
                   style={{ fontFamily: 'Comfortaa, sans-serif' }}
                 >
-                  Buongiorno, Marco
-                </h2>
+                  Panoramica Attività Alveare
+                </h1>
               </div>
-              <div
-                className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium shadow-sm"
-                style={{
-                  backgroundColor: '#e6faf5',
-                  color: '#20C997',
-                  fontFamily: 'Afacad Flux, sans-serif',
-                }}
-              >
-                <MapPin size={13} strokeWidth={2} />
-                <span>{d.apiary_name}</span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div
+                  className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium shadow-sm"
+                  style={{ backgroundColor: 'white', color: '#6b7280', fontFamily: 'Afacad Flux, sans-serif' }}
+                >
+                  <Clock size={13} strokeWidth={2} />
+                  <span className="tabular-nums">{timeStr}</span>
+                </div>
+                <div
+                  className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium shadow-sm"
+                  style={{ backgroundColor: '#e6faf5', color: '#0d9488', fontFamily: 'Afacad Flux, sans-serif' }}
+                >
+                  <MapPin size={13} strokeWidth={2} />
+                  <span>{d.apiary_name}</span>
+                </div>
               </div>
             </div>
+
             {/* Device health */}
-            <div
-              className="rounded-[10px] px-6 py-4 shadow-sm"
-              style={{ backgroundColor: 'white' }}
-            >
+            <div className="rounded-2xl px-6 py-4 shadow-sm" style={{ backgroundColor: 'white' }}>
               <DeviceHealth
                 battery={d.device.battery}
                 solarCharging={d.device.solar_charging}
                 signal={d.device.signal}
               />
             </div>
-            {/* Health Indicator */}
+
+            {/* KPI cards + alert */}
             <HealthIndicator
               totalBees={d.total_bees}
               temp={d.env_data.temp}
