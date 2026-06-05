@@ -1,7 +1,8 @@
 import VarroaAlert from './VarroaAlert';
 import EnvMiniChart from './EnvMiniChart';
 import { apiaryData as d } from '../data/mockData';
-import { Bug, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Bug, TrendingUp, AlertTriangle, MapPin } from 'lucide-react';
+
 
 export default function DailyReport() {
   const todayStr = new Date().toLocaleDateString('it-IT', {
@@ -25,17 +26,28 @@ export default function DailyReport() {
 
   return (
     <main className="max-w-5xl mx-auto px-4 md:px-8 pb-12 space-y-5 pt-6">
-      {/* Page title */}
-      <div>
-        <p className="text-gray-400 text-sm" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-          {todayStr}
-        </p>
-        <h2
-          className="font-bold text-gray-800 text-3xl mt-1"
-          style={{ fontFamily: 'Comfortaa, sans-serif' }}
-        >
-          Rapporto Giornaliero
-        </h2>
+      {/* Header */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <p className="text-gray-400 text-sm capitalize" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+            {todayStr}
+          </p>
+          <h1
+            className="font-bold text-gray-800 text-3xl mt-1 leading-tight"
+            style={{ fontFamily: 'Comfortaa, sans-serif' }}
+          >
+            Report Giornaliero
+          </h1>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div
+            className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium shadow-sm"
+            style={{ backgroundColor: '#e6faf5', color: '#0d9488', fontFamily: 'Afacad Flux, sans-serif' }}
+          >
+            <MapPin size={13} strokeWidth={2} />
+            <span>{d.apiary_name}</span>
+          </div>
+        </div>
       </div>
 
       {/* Varroa Alert */}

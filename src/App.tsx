@@ -5,7 +5,7 @@ import ActivityChart from './components/ActivityChart';
 import DeviceHealth from './components/DeviceHealth';
 import DailyReport from './components/DailyReport';
 import { apiaryData as d } from './data/mockData';
-import { MapPin, Clock } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('realtime');
@@ -20,12 +20,6 @@ export default function App() {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-  });
-
-  const timeStr = now.toLocaleTimeString('it-IT', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
   });
 
   return (
@@ -46,17 +40,10 @@ export default function App() {
                   className="font-bold text-gray-800 text-3xl mt-1 leading-tight"
                   style={{ fontFamily: 'Comfortaa, sans-serif' }}
                 >
-                  Panoramica Attività Alveare
+                  Panoramica Attività
                 </h1>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
-                <div
-                  className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium shadow-sm"
-                  style={{ backgroundColor: 'white', color: '#6b7280', fontFamily: 'Afacad Flux, sans-serif' }}
-                >
-                  <Clock size={13} strokeWidth={2} />
-                  <span className="tabular-nums">{timeStr}</span>
-                </div>
                 <div
                   className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium shadow-sm"
                   style={{ backgroundColor: '#e6faf5', color: '#0d9488', fontFamily: 'Afacad Flux, sans-serif' }}
