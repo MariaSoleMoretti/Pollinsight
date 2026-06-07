@@ -106,30 +106,41 @@ export default function ActivityChart({
   const [selectedHiveId, setSelectedHiveId] = useState<string | null>(null);
 
   const currentHour = new Date().getHours();
-  const allData = viewMode === 'aggregate'
-    ? aggregatedToday
-    : hives.flatMap(h => h.hourly_activity);
-  const allYesterday = viewMode === 'aggregate'
-    ? aggregatedYesterday
-    : hives.flatMap(h => h.hourly_activity_yesterday);
-  const maxVal = Math.max(...allData, ...allYesterday, 1);
   const xStep = INNER_W / (24 - 1);
 
   const currentSlot = TIME_SLOTS.find(s => currentHour >= s.start && currentHour < s.end) ?? null;
 
-  // Dynamic Y-axis ticks based on max value
-  const getYTicks = (max: number): number[] => {
-    const step = Math.pow(10, Math.floor(Math.log10(max)) || 1);
-    const normalizedMax = Math.ceil(max / step) * step;
-    const tickCount = 5;
-    const tickStep = normalizedMax / (tickCount - 1);
-    return Array.from({ length: tickCount }, (_, i) => Math.round(i * tickStep));
-  };
-  const yTicks = getYTicks(maxVal);
-  const currentX = PAD.left + currentHour * xStep;
-
-  // Prepare data for chart
+  // Prepare data for chart - truncate today at current hour, show full yesterday
   const truncateAtHour = (arr: number[]) => arr.slice(0, currentHour + 1);
+
+  // Get max values from data that will actually be displayed
+  const todayDisplayData = viewMode === 'aggregate'
+    ? truncateAtHour(aggregatedToday)
+    : hives.flatMap(h => truncateAtHour(h.hourly_activity));
+  const yesterdayDisplayData = viewMode === 'aggregate'
+    ? aggregatedYesterday // Show full yesterday for comparison
+    : hives.flatMap(h => h.hourly_activity_yesterday);
+
+  const rawMax = Math.max(...todayDisplayData, ...yesterdayDisplayData, 1);
+
+  // Calculate nice scale max (rounded up to nearest nice number)
+  const getNiceMax = (max: number): number => {
+    if (max <= 0) return 100;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(max)));
+    const normalized = max / magnitude;
+    let nice: number;
+    if (normalized <= 1) nice = 1;
+    else if (normalized <= 2) nice = 2;
+    else if (normalized <= 5) nice = 5;
+    else nice = 10;
+    return nice * magnitude;
+  };
+
+  const scaleMax = getNiceMax(rawMax);
+
+  // Generate Y-axis ticks
+  const yTicks = [0, scaleMax * 0.25, scaleMax * 0.5, scaleMax * 0.75, scaleMax].map(v => Math.round(v));
+  const currentX = PAD.left + currentHour * xStep;
 
   const renderLine = (
     data: number[],
@@ -140,7 +151,7 @@ export default function ActivityChart({
     const displayData = truncateAtHour(data);
     const pts: [number, number][] = displayData.map((v, i) => [
       PAD.left + i * xStep,
-      PAD.top + INNER_H - (v / maxVal) * INNER_H,
+      PAD.top + INNER_H - (v / scaleMax) * INNER_H,
     ]);
 
     const linePath = smooth(pts);
@@ -362,7 +373,7 @@ export default function ActivityChart({
 
               {/* Y gridlines */}
               {yTicks.map(v => {
-                const y = PAD.top + INNER_H - (v / maxVal) * INNER_H;
+                const y = PAD.top + INNER_H - (v / scaleMax) * INNER_H;
                 return (
                   <g key={v}>
                     <line
