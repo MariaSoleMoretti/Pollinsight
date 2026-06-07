@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { X, Layers, List } from 'lucide-react';
+import { X, Layers, List, Info } from 'lucide-react';
 import type { Hive } from '../data/mockData';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const W = 800;
-const H = 300;
-const PAD = { top: 48, right: 24, bottom: 36, left: 52 };
+const H = 280;
+const PAD = { top: 28, right: 24, bottom: 36, left: 52 };
 const INNER_W = W - PAD.left - PAD.right;
 const INNER_H = H - PAD.top - PAD.bottom;
 
@@ -13,52 +13,66 @@ interface TimeSlot {
   start: number;
   end: number;
   label: string;
+  shortLabel: string;
   fill: string;
   textColor: string;
   isCrown: boolean;
-  modalIcon: string;
-  modalWhat: string;
-  modalWhy: string;
-  modalWarning?: string;
+  icon: string;
+  description: string;
+  what: string;
+  why: string;
+  warning?: string;
 }
 
 const TIME_SLOTS: TimeSlot[] = [
   {
     start: 6, end: 11,
     label: 'Mattina',
+    shortLabel: '06:00 - 11:00',
     fill: '#fef9e7',
-    textColor: '#b45309', isCrown: false,
-    modalIcon: '🌅',
-    modalWhat: 'Le bottinatrici escono nelle prime ore del mattino per le raccolte di polline e nettare. Il traffico al portale cresce progressivamente con il riscaldarsi dell\'aria.',
-    modalWhy: 'Questo è il periodo più indicato per osservare il comportamento della colonia: un flusso ordinato e bidirezionale indica una colonia sana e ben orientata. Carichi di polline sulle zampe posteriori sono un segnale positivo di allevamento attivo della covata.',
+    textColor: '#b45309',
+    isCrown: false,
+    icon: '🌅',
+    description: 'Fase di intensa ripresa delle attività. Le api bottinatrici escono per la raccolta di nettare e polline fresco.',
+    what: 'Le bottinatrici escono nelle prime ore del mattino per le raccolte di polline e nettare. Il traffico al portale cresce progressivamente con il riscaldarsi dell\'aria.',
+    why: 'Questo è il periodo più indicato per osservare il comportamento della colonia: un flusso ordinato e bidirezionale indica una colonia sana e ben orientata.',
   },
   {
     start: 14, end: 16,
     label: 'Primo Pomeriggio',
+    shortLabel: '14:00 - 16:00',
     fill: '#fef3c7',
-    textColor: '#a16207', isCrown: false,
-    modalIcon: '☀️',
-    modalWhat: 'Le temperature raggiungono il picco giornaliero. Le api continuano a bottinare con intensità, privilegiando fonti di nettare vicine all\'alveare per limitare il dispendio energetico.',
-    modalWhy: 'Un\'attività sostenuta in questa fascia indica buona disponibilità floreale nel raggio di 1–3 km. Se l\'attività cala bruscamente rispetto alla mattina e le condizioni meteo sono buone, potrebbe esserci una riduzione delle risorse floreali nelle vicinanze.',
+    textColor: '#a16207',
+    isCrown: false,
+    icon: '☀️',
+    description: 'Picco di calore giornaliero. Monitoraggio della ventilazione dell\'alveare e stabilità dei voli regolari.',
+    what: 'Le temperature raggiungono il picco giornaliero. Le api continuano a bottinare con intensità, privilegiando fonti di nettare vicine all\'alveare.',
+    why: 'Un\'attività sostenuta in questa fascia indica buona disponibilità floreale nel raggio di 1–3 km.',
   },
   {
     start: 16, end: 19,
     label: 'Volo della Regina',
+    shortLabel: '16:00 - 19:00',
     fill: '#fde8c8',
-    textColor: '#b45309', isCrown: true,
-    modalIcon: '👑',
-    modalWhat: 'La regina vergine esce dall\'alveare per il volo di accoppiamento con i fuchi ad alta quota. L\'evento dura 20–30 minuti e avviene tipicamente nelle ore più calde del pomeriggio.',
-    modalWhy: 'È un momento critico che determina la genetica, la fecondità della regina e il futuro intero della colonia. Una regina ben fecondata può deporre fino a 2.000 uova al giorno per anni.',
-    modalWarning: 'Evitare qualsiasi disturbo fisico all\'alveare in questa fascia oraria. Urti, vibrazioni o aperture del tetto possono impedire il rientro della regina o spaventarla, compromettendo irreversibilmente il volo nuziale.',
+    textColor: '#b45309',
+    isCrown: true,
+    icon: '👑',
+    description: 'Finestra critica per il volo nuziale della regina e l\'orientamento dei giovani fuchi.',
+    what: 'La regina vergine esce dall\'alveare per il volo di accoppiamento con i fuchi ad alta quota. L\'evento dura 20–30 minuti.',
+    why: 'È un momento critico che determina la genetica, la fecondità della regina e il futuro intero della colonia.',
+    warning: 'Evitare qualsiasi disturbo fisico all\'alveare in questa fascia oraria. Urti o aperture possono compromettere irreversibilmente il volo nuziale.',
   },
   {
     start: 19, end: 24,
     label: 'Sera',
+    shortLabel: '19:00 - 24:00',
     fill: '#dce8f5',
-    textColor: '#3b82f6', isCrown: false,
-    modalIcon: '🌙',
-    modalWhat: 'L\'attività di volo si riduce rapidamente dopo il tramonto. Le api rientrano nell\'alveare e avviano la termoregolazione notturna, mantenendo il nido covata a circa 35°C.',
-    modalWhy: 'Un calo netto del traffico al portale in questa fascia è del tutto normale. Se si osservano api in uscita in numero anomalo di notte, potrebbe indicare sovraffollamento, eccessivo calore interno o presenza di predatori.',
+    textColor: '#3b82f6',
+    isCrown: false,
+    icon: '🌙',
+    description: 'Rientro totale dello sciame. Fase di riposo, ventilazione notturna ed elaborazione termica interna.',
+    what: 'L\'attività di volo si riduce rapidamente dopo il tramonto. Le api rientrano nell\'alveare e avviano la termoregolazione notturna.',
+    why: 'Un calo netto del traffico al portale in questa fascia è del tutto normale.',
   },
 ];
 
@@ -105,7 +119,7 @@ export default function ActivityChart({
 
   // Dynamic Y-axis ticks based on max value
   const getYTicks = (max: number): number[] => {
-    const step = Math.pow(10, Math.floor(Math.log10(max)));
+    const step = Math.pow(10, Math.floor(Math.log10(max)) || 1);
     const normalizedMax = Math.ceil(max / step) * step;
     const tickCount = 5;
     const tickStep = normalizedMax / (tickCount - 1);
@@ -222,34 +236,47 @@ export default function ActivityChart({
                 </div>
               )}
 
-              {/* Pulsating badge for current slot */}
-              {currentSlot && (
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="relative flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold cursor-pointer select-none transition-transform hover:scale-105 active:scale-95"
-                  style={{
-                    backgroundColor: currentSlot.fill,
-                    color: currentSlot.textColor,
-                    fontFamily: 'Afacad Flux, sans-serif',
-                    border: `1.5px solid ${currentSlot.textColor}55`,
-                  }}
-                >
-                  <span
-                    className="absolute inset-0 rounded-full animate-pulse"
-                    style={{ backgroundColor: currentSlot.fill, opacity: 0.6 }}
-                  />
-                  <span className="relative flex items-center gap-1.5">
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
-                      style={{ backgroundColor: currentSlot.textColor }}
-                    />
-                    {currentSlot.isCrown && <span>♛</span>}
-                    {currentSlot.label}
-                  </span>
-                </button>
-              )}
+              {/* Info button to open modal */}
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-all hover:bg-gray-100"
+                style={{
+                  backgroundColor: '#f9fafb',
+                  color: '#6b7280',
+                  fontFamily: 'Afacad Flux, sans-serif',
+                  border: '1px solid #e5e7eb',
+                }}
+              >
+                <Info size={14} strokeWidth={2.5} />
+                Fasce orarie
+              </button>
             </div>
           </div>
+
+          {/* Current slot indicator */}
+          {currentSlot && (
+            <div
+              className="flex items-center gap-2 mb-3"
+              style={{ fontFamily: 'Afacad Flux, sans-serif' }}
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-full animate-pulse"
+                style={{ backgroundColor: currentSlot.textColor }}
+              />
+              <span className="text-xs text-gray-500">
+                Fascia attuale:
+              </span>
+              <span
+                className="text-xs font-semibold"
+                style={{ color: currentSlot.textColor }}
+              >
+                {currentSlot.isCrown && '♛ '}{currentSlot.label}
+              </span>
+              <span className="text-xs text-gray-400">
+                ({currentSlot.shortLabel})
+              </span>
+            </div>
+          )}
 
           {/* Hive selector for breakdown mode */}
           {viewMode === 'breakdown' && hives.length > 1 && (
@@ -313,57 +340,23 @@ export default function ActivityChart({
                 </clipPath>
               </defs>
 
-              {/* Time slot bands */}
+              {/* Time slot bands - only colored rects, no labels */}
               {TIME_SLOTS.map((slot) => {
                 const x = PAD.left + slot.start * xStep;
                 const w = (slot.end - slot.start) * xStep;
-                const midX = x + w / 2;
                 const isActive = currentSlot?.label === slot.label;
 
                 return (
-                  <g key={slot.label}>
-                    <rect
-                      x={x}
-                      y={PAD.top}
-                      width={w}
-                      height={INNER_H}
-                      fill={isActive ? slot.fill : slot.fill}
-                      opacity={isActive ? 0.85 : 0.55}
-                      clipPath="url(#chartClip)"
-                    />
-                    {isActive && (
-                      <rect
-                        x={x}
-                        y={PAD.top}
-                        width={w}
-                        height={3}
-                        fill={slot.textColor}
-                        opacity="0.6"
-                        clipPath="url(#chartClip)"
-                      />
-                    )}
-                    <text
-                      x={midX}
-                      y={PAD.top - 7}
-                      textAnchor="middle"
-                      fontSize="8.5"
-                      fill={slot.textColor}
-                      fontWeight={isActive ? '700' : '500'}
-                      style={{ fontFamily: 'Afacad Flux, sans-serif' }}
-                    >
-                      {slot.isCrown ? `♛ ${slot.label}` : slot.label}
-                    </text>
-                    <line
-                      x1={x}
-                      y1={PAD.top - 20}
-                      x2={x + w}
-                      y2={PAD.top - 20}
-                      stroke={slot.textColor}
-                      strokeWidth={isActive ? 2 : 1}
-                      strokeLinecap="round"
-                      opacity={isActive ? 0.7 : 0.35}
-                    />
-                  </g>
+                  <rect
+                    key={slot.label}
+                    x={x}
+                    y={PAD.top}
+                    width={w}
+                    height={INNER_H}
+                    fill={slot.fill}
+                    opacity={isActive ? 0.85 : 0.5}
+                    clipPath="url(#chartClip)"
+                  />
                 );
               })}
 
@@ -390,20 +383,15 @@ export default function ActivityChart({
               {/* Render lines based on view mode */}
               {viewMode === 'aggregate' ? (
                 <>
-                  {/* Yesterday aggregated */}
                   {renderLine(aggregatedYesterday, '#b0b8c1', true)}
-                  {/* Today aggregated */}
                   {renderLine(aggregatedToday, '#6B2D8C', false, true)}
                 </>
               ) : selectedHive ? (
                 <>
-                  {/* Selected hive yesterday */}
                   {renderLine(selectedHive.hourly_activity_yesterday, '#b0b8c1', true)}
-                  {/* Selected hive today */}
                   {renderLine(selectedHive.hourly_activity, HIVE_COLORS[hives.findIndex(h => h.id === selectedHive.id) % HIVE_COLORS.length], false, true)}
                 </>
               ) : (
-                /* All hives overlay in breakdown mode (multi-line) */
                 hives.map((hive, idx) => (
                   <g key={hive.id}>
                     {renderLine(hive.hourly_activity_yesterday, '#b0b8c1', true)}
@@ -433,13 +421,6 @@ export default function ActivityChart({
                 x2={currentX} y2={PAD.top + INNER_H}
                 stroke="#6B2D8C" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.4"
               />
-              <text
-                x={currentX + 5} y={PAD.top + 11}
-                fontSize="9" fill="#6B2D8C" fontWeight="700"
-                style={{ fontFamily: 'Afacad Flux, sans-serif' }}
-              >
-                Ora
-              </text>
             </svg>
           </div>
 
@@ -491,103 +472,145 @@ export default function ActivityChart({
         </div>
       </div>
 
-      {/* Modal */}
-      {modalOpen && currentSlot && (
+      {/* Modal with full time slot legend */}
+      {modalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(6px)' }}
           onClick={() => setModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden"
             style={{ backgroundColor: 'white' }}
             onClick={e => e.stopPropagation()}
           >
-            <div
-              className="px-6 pt-6 pb-5"
-              style={{ backgroundColor: currentSlot.fill }}
-            >
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4" style={{ backgroundColor: '#f9fafb' }}>
               <button
                 onClick={() => setModalOpen(false)}
-                className="absolute top-4 right-4 rounded-full p-1.5 transition-colors hover:bg-black/10"
-                style={{ color: currentSlot.textColor }}
+                className="absolute top-4 right-4 rounded-full p-1.5 transition-colors hover:bg-gray-200"
+                style={{ color: '#6b7280' }}
               >
                 <X size={18} strokeWidth={2.5} />
               </button>
 
               <div className="flex items-center gap-3">
-                <span style={{ fontSize: '2rem', lineHeight: 1 }}>{currentSlot.modalIcon}</span>
-                <div>
-                  <p
-                    className="text-xs font-semibold uppercase tracking-widest mb-0.5"
-                    style={{ color: currentSlot.textColor, fontFamily: 'Afacad Flux, sans-serif', opacity: 0.7 }}
-                  >
-                    Fascia oraria attuale
-                  </p>
-                  <h2
-                    className="font-bold text-xl leading-tight"
-                    style={{ color: currentSlot.textColor, fontFamily: 'Comfortaa, sans-serif' }}
-                  >
-                    {currentSlot.isCrown ? `♛ ${currentSlot.label}` : currentSlot.label}
-                  </h2>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-5 space-y-4">
-              <div>
-                <p
-                  className="text-xs font-bold uppercase tracking-wider mb-1.5"
-                  style={{ color: '#6b7280', fontFamily: 'Afacad Flux, sans-serif' }}
-                >
-                  Cosa succede ora
-                </p>
-                <p
-                  className="text-sm text-gray-700 leading-relaxed"
-                  style={{ fontFamily: 'Afacad Flux, sans-serif' }}
-                >
-                  {currentSlot.modalWhat}
-                </p>
-              </div>
-
-              <div>
-                <p
-                  className="text-xs font-bold uppercase tracking-wider mb-1.5"
-                  style={{ color: '#6b7280', fontFamily: 'Afacad Flux, sans-serif' }}
-                >
-                  Perche e importante
-                </p>
-                <p
-                  className="text-sm text-gray-700 leading-relaxed"
-                  style={{ fontFamily: 'Afacad Flux, sans-serif' }}
-                >
-                  {currentSlot.modalWhy}
-                </p>
-              </div>
-
-              {currentSlot.modalWarning && (
                 <div
-                  className="rounded-xl px-4 py-3 flex items-start gap-2.5"
-                  style={{ backgroundColor: '#fff7ed', border: '1px solid #fed7aa' }}
+                  className="rounded-xl p-2"
+                  style={{ backgroundColor: '#f5f0f8' }}
                 >
-                  <span style={{ fontSize: '15px', flexShrink: 0, marginTop: '1px' }}>⚠️</span>
+                  <Info size={20} strokeWidth={2} color="#6B2D8C" />
+                </div>
+                <div>
+                  <h2
+                    className="font-bold text-lg"
+                    style={{ color: '#1e293b', fontFamily: 'Comfortaa, sans-serif' }}
+                  >
+                    Fasce Orarie Giornaliere
+                  </h2>
                   <p
-                    className="text-xs text-orange-700 leading-relaxed font-medium"
+                    className="text-xs text-gray-500 mt-0.5"
                     style={{ fontFamily: 'Afacad Flux, sans-serif' }}
                   >
-                    {currentSlot.modalWarning}
+                    I ritmi naturali dell\'attività delle api
                   </p>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="px-6 pb-5">
+            {/* Time slots list */}
+            <div className="px-6 py-4 space-y-3 max-h-[60vh] overflow-y-auto">
+              {TIME_SLOTS.map((slot, idx) => {
+                const isActive = currentSlot?.label === slot.label;
+
+                return (
+                  <div
+                    key={slot.label}
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      backgroundColor: slot.fill,
+                      border: isActive ? `2px solid ${slot.textColor}` : '1px solid transparent',
+                    }}
+                  >
+                    <div className="px-4 py-3">
+                      <div className="flex items-start gap-3">
+                        {/* Colored badge */}
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: 'white' }}
+                        >
+                          <span style={{ fontSize: '20px' }}>{slot.icon}</span>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p
+                              className="font-semibold text-sm"
+                              style={{ color: slot.textColor, fontFamily: 'Comfortaa, sans-serif' }}
+                            >
+                              {slot.isCrown && '♛ '}{slot.label}
+                            </p>
+                            {isActive && (
+                              <span
+                                className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                                style={{
+                                  backgroundColor: slot.textColor,
+                                  color: 'white',
+                                  fontFamily: 'Afacad Flux, sans-serif',
+                                }}
+                              >
+                                Attivo
+                              </span>
+                            )}
+                          </div>
+                          <p
+                            className="text-xs mt-0.5"
+                            style={{ color: slot.textColor, opacity: 0.7, fontFamily: 'Afacad Flux, sans-serif' }}
+                          >
+                            {slot.shortLabel}
+                          </p>
+                          <p
+                            className="text-sm mt-2 leading-relaxed"
+                            style={{ color: '#374151', fontFamily: 'Afacad Flux, sans-serif' }}
+                          >
+                            {slot.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {slot.warning && (
+                        <div
+                          className="flex items-start gap-2 mt-3 px-3 py-2 rounded-xl"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.7)' }}
+                        >
+                          <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>
+                            {idx === 2 ? '⚠️' : ''}
+                          </span>
+                          {slot.warning && idx === 2 && (
+                            <p
+                              className="text-xs leading-relaxed"
+                              style={{ color: '#c2410c', fontFamily: 'Afacad Flux, sans-serif' }}
+                            >
+                              {slot.warning}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-5 pt-2">
               <button
                 onClick={() => setModalOpen(false)}
                 className="w-full rounded-2xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-80"
                 style={{
-                  backgroundColor: currentSlot.fill,
-                  color: currentSlot.textColor,
+                  backgroundColor: '#f5f0f8',
+                  color: '#6B2D8C',
                   fontFamily: 'Afacad Flux, sans-serif',
                 }}
               >
