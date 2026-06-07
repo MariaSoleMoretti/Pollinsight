@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Layers, List } from 'lucide-react';
+import type { Hive } from '../data/mockData';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const W = 800;
@@ -61,6 +62,8 @@ const TIME_SLOTS: TimeSlot[] = [
   },
 ];
 
+const HIVE_COLORS = ['#6B2D8C', '#0d9488', '#b45309', '#dc2626', '#0369a1'];
+
 function smooth(points: [number, number][]): string {
   if (points.length < 2) return '';
   let d = `M ${points[0][0]} ${points[0][1]}`;
@@ -74,41 +77,85 @@ function smooth(points: [number, number][]): string {
 }
 
 interface ActivityChartProps {
-  data: number[];
-  previousData?: number[];
+  hives: Hive[];
+  aggregatedToday: number[];
+  aggregatedYesterday: number[];
 }
 
-export default function ActivityChart({ data, previousData }: ActivityChartProps) {
+export default function ActivityChart({
+  hives,
+  aggregatedToday,
+  aggregatedYesterday,
+}: ActivityChartProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'aggregate' | 'breakdown'>('aggregate');
+  const [selectedHiveId, setSelectedHiveId] = useState<string | null>(null);
+
   const currentHour = new Date().getHours();
-  const maxVal = Math.max(...data, ...(previousData ?? []), 1);
-  const xStep = INNER_W / (data.length - 1);
+  const allData = viewMode === 'aggregate'
+    ? aggregatedToday
+    : hives.flatMap(h => h.hourly_activity);
+  const allYesterday = viewMode === 'aggregate'
+    ? aggregatedYesterday
+    : hives.flatMap(h => h.hourly_activity_yesterday);
+  const maxVal = Math.max(...allData, ...allYesterday, 1);
+  const xStep = INNER_W / (24 - 1);
 
   const currentSlot = TIME_SLOTS.find(s => currentHour >= s.start && currentHour < s.end) ?? null;
 
-  const currentDataToDisplay = data.slice(0, currentHour + 1);
+  const yTicks = [0, 300, 600, 900, 1200, 1500].filter(v => v <= maxVal + 200);
+  const currentX = PAD.left + currentHour * xStep;
 
-  const pts: [number, number][] = currentDataToDisplay.map((v, i) => [
-    PAD.left + i * xStep,
-    PAD.top + INNER_H - (v / maxVal) * INNER_H,
-  ]);
+  // Prepare data for chart
+  const truncateAtHour = (arr: number[]) => arr.slice(0, currentHour + 1);
 
-  const prevPts: [number, number][] | null = previousData
-    ? previousData.map((v, i) => [
+  const renderLine = (
+    data: number[],
+    color: string,
+    isDashed: boolean = false,
+    showArea: boolean = false
+  ) => {
+    const displayData = truncateAtHour(data);
+    const pts: [number, number][] = displayData.map((v, i) => [
       PAD.left + i * xStep,
       PAD.top + INNER_H - (v / maxVal) * INNER_H,
-    ])
-    : null;
+    ]);
 
-  const linePath = smooth(pts);
-  const areaPath =
-    pts.length > 1
+    const linePath = smooth(pts);
+    if (!linePath) return null;
+
+    const areaPath = showArea
       ? `${linePath} L ${pts[pts.length - 1][0]} ${PAD.top + INNER_H} L ${pts[0][0]} ${PAD.top + INNER_H} Z`
-      : '';
-  const prevLinePath = prevPts ? smooth(prevPts) : null;
+      : null;
 
-  const yTicks = [0, 300, 600, 900, 1200].filter(v => v <= maxVal + 200);
-  const currentX = PAD.left + currentHour * xStep;
+    return (
+      <>
+        {areaPath && (
+          <path
+            d={areaPath}
+            fill={color}
+            fillOpacity="0.15"
+            clipPath="url(#chartClip)"
+          />
+        )}
+        <path
+          d={linePath}
+          fill="none"
+          stroke={color}
+          strokeWidth={isDashed ? 2 : 2.5}
+          strokeDasharray={isDashed ? '6 4' : undefined}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          clipPath="url(#chartClip)"
+          opacity={isDashed ? 0.6 : 1}
+        />
+      </>
+    );
+  };
+
+  const selectedHive = selectedHiveId
+    ? hives.find(h => h.id === selectedHiveId) ?? null
+    : null;
 
   return (
     <>
@@ -120,11 +167,53 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                 Attività Api — 24h
               </h3>
               <p className="text-gray-400 text-sm mt-0.5" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-                Entrate e uscite attraverso il sensore del portale alveare
+                {viewMode === 'aggregate'
+                  ? 'Totale aggregato di tutti gli alveari'
+                  : 'Dettaglio per singolo alveare'}
               </p>
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
+              {/* View mode toggle */}
+              {hives.length > 1 && (
+                <div
+                  className="flex items-center rounded-full p-0.5"
+                  style={{ backgroundColor: '#f3f4f6' }}
+                >
+                  <button
+                    onClick={() => setViewMode('aggregate')}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                    style={{
+                      backgroundColor: viewMode === 'aggregate' ? 'white' : 'transparent',
+                      color: viewMode === 'aggregate' ? '#6B2D8C' : '#6b7280',
+                      fontFamily: 'Afacad Flux, sans-serif',
+                      boxShadow: viewMode === 'aggregate' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                    }}
+                  >
+                    <Layers size={12} strokeWidth={2.5} />
+                    Aggregato
+                  </button>
+                  <button
+                    onClick={() => {
+                      setViewMode('breakdown');
+                      if (!selectedHiveId && hives.length > 0) {
+                        setSelectedHiveId(hives[0].id);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                    style={{
+                      backgroundColor: viewMode === 'breakdown' ? 'white' : 'transparent',
+                      color: viewMode === 'breakdown' ? '#6B2D8C' : '#6b7280',
+                      fontFamily: 'Afacad Flux, sans-serif',
+                      boxShadow: viewMode === 'breakdown' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                    }}
+                  >
+                    <List size={12} strokeWidth={2.5} />
+                    Per alveare
+                  </button>
+                </div>
+              )}
+
               {/* Pulsating badge for current slot */}
               {currentSlot && (
                 <button
@@ -137,40 +226,67 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                     border: `1.5px solid ${currentSlot.textColor}55`,
                   }}
                 >
-                  {/* Slot tag */}
                   <span
-                    className="absolute inset-0 rounded-full"
-                    style={{ backgroundColor: currentSlot.fill, opacity: 0.5 }}
+                    className="absolute inset-0 rounded-full animate-pulse"
+                    style={{ backgroundColor: currentSlot.fill, opacity: 0.6 }}
                   />
                   <span className="relative flex items-center gap-1.5">
                     <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
                       style={{ backgroundColor: currentSlot.textColor }}
                     />
                     {currentSlot.isCrown && <span>♛</span>}
-                    Fascia Attuale: {currentSlot.label}
+                    {currentSlot.label}
                   </span>
                 </button>
               )}
-
-              <div className="flex items-center gap-4 text-xs" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
-                <span className="flex items-center gap-1.5 text-gray-500">
-                  <svg width="20" height="10" viewBox="0 0 20 10">
-                    <line x1="0" y1="5" x2="20" y2="5" stroke="#6B2D8C" strokeWidth="2.5" strokeLinecap="round" />
-                  </svg>
-                  Oggi
-                </span>
-                {prevLinePath && (
-                  <span className="flex items-center gap-1.5 text-gray-400">
-                    <svg width="20" height="10" viewBox="0 0 20 10">
-                      <line x1="0" y1="5" x2="20" y2="5" stroke="#b0b8c1" strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" />
-                    </svg>
-                    Ieri
-                  </span>
-                )}
-              </div>
             </div>
           </div>
+
+          {/* Hive selector for breakdown mode */}
+          {viewMode === 'breakdown' && hives.length > 1 && (
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              {hives.map((hive, idx) => {
+                const isSelected = selectedHiveId === hive.id;
+                const currentTotal = truncateAtHour(hive.hourly_activity).reduce((a, b) => a + b, 0);
+
+                return (
+                  <button
+                    key={hive.id}
+                    onClick={() => setSelectedHiveId(hive.id)}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 transition-all"
+                    style={{
+                      backgroundColor: isSelected ? HIVE_COLORS[idx % HIVE_COLORS.length] + '15' : '#f9fafb',
+                      border: `1.5px solid ${isSelected ? HIVE_COLORS[idx % HIVE_COLORS.length] : '#e5e7eb'}`,
+                    }}
+                  >
+                    <span
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: HIVE_COLORS[idx % HIVE_COLORS.length] }}
+                    />
+                    <span
+                      className="text-xs font-semibold"
+                      style={{
+                        color: isSelected ? HIVE_COLORS[idx % HIVE_COLORS.length] : '#374151',
+                        fontFamily: 'Afacad Flux, sans-serif',
+                      }}
+                    >
+                      {hive.name}
+                    </span>
+                    <span
+                      className="text-xs"
+                      style={{
+                        color: '#6b7280',
+                        fontFamily: 'Afacad Flux, sans-serif',
+                      }}
+                    >
+                      {currentTotal.toLocaleString()}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <div className="w-full overflow-x-auto">
             <svg
@@ -181,7 +297,7 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
             >
               <defs>
                 <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6B2D8C" stopOpacity="0.3" />
+                  <stop offset="0%" stopColor="#6B2D8C" stopOpacity="0.25" />
                   <stop offset="100%" stopColor="#6B2D8C" stopOpacity="0.02" />
                 </linearGradient>
                 <clipPath id="chartClip">
@@ -194,6 +310,7 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                 const x = PAD.left + slot.start * xStep;
                 const w = (slot.end - slot.start) * xStep;
                 const midX = x + w / 2;
+                const isActive = currentSlot?.label === slot.label;
 
                 return (
                   <g key={slot.label}>
@@ -202,20 +319,31 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                       y={PAD.top}
                       width={w}
                       height={INNER_H}
-                      fill={slot.fill}
-                      opacity={0.6}
+                      fill={isActive ? slot.fill : slot.fill}
+                      opacity={isActive ? 0.85 : 0.55}
                       clipPath="url(#chartClip)"
                     />
+                    {isActive && (
+                      <rect
+                        x={x}
+                        y={PAD.top}
+                        width={w}
+                        height={3}
+                        fill={slot.textColor}
+                        opacity="0.6"
+                        clipPath="url(#chartClip)"
+                      />
+                    )}
                     <text
                       x={midX}
                       y={PAD.top - 7}
                       textAnchor="middle"
                       fontSize="8.5"
                       fill={slot.textColor}
-                      fontWeight={'600'}
+                      fontWeight={isActive ? '700' : '500'}
                       style={{ fontFamily: 'Afacad Flux, sans-serif' }}
                     >
-                      {slot.modalIcon}
+                      {slot.isCrown ? `♛ ${slot.label}` : slot.label}
                     </text>
                     <line
                       x1={x}
@@ -223,9 +351,9 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                       x2={x + w}
                       y2={PAD.top - 20}
                       stroke={slot.textColor}
-                      strokeWidth={1.5}
+                      strokeWidth={isActive ? 2 : 1}
                       strokeLinecap="round"
-                      opacity={0.4}
+                      opacity={isActive ? 0.7 : 0.35}
                     />
                   </g>
                 );
@@ -251,34 +379,32 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                 );
               })}
 
-              {prevLinePath && (
-                <path
-                  d={prevLinePath}
-                  fill="none" stroke="#b0b8c1" strokeWidth="2"
-                  strokeDasharray="6 4" strokeLinecap="round" strokeLinejoin="round"
-                  clipPath="url(#chartClip)" opacity="0.7"
-                />
+              {/* Render lines based on view mode */}
+              {viewMode === 'aggregate' ? (
+                <>
+                  {/* Yesterday aggregated */}
+                  {renderLine(aggregatedYesterday, '#b0b8c1', true)}
+                  {/* Today aggregated */}
+                  {renderLine(aggregatedToday, '#6B2D8C', false, true)}
+                </>
+              ) : selectedHive ? (
+                <>
+                  {/* Selected hive yesterday */}
+                  {renderLine(selectedHive.hourly_activity_yesterday, '#b0b8c1', true)}
+                  {/* Selected hive today */}
+                  {renderLine(selectedHive.hourly_activity, HIVE_COLORS[hives.findIndex(h => h.id === selectedHive.id) % HIVE_COLORS.length], false, true)}
+                </>
+              ) : (
+                /* All hives overlay in breakdown mode (multi-line) */
+                hives.map((hive, idx) => (
+                  <g key={hive.id}>
+                    {renderLine(hive.hourly_activity_yesterday, '#b0b8c1', true)}
+                    {renderLine(hive.hourly_activity, HIVE_COLORS[idx % HIVE_COLORS.length])}
+                  </g>
+                ))
               )}
 
-              {areaPath && (
-                <path d={areaPath} fill="url(#areaGrad)" clipPath="url(#chartClip)" />
-              )}
-
-              {linePath && (
-                <path
-                  d={linePath}
-                  fill="none" stroke="#6B2D8C" strokeWidth="3"
-                  strokeLinecap="round" strokeLinejoin="round"
-                  clipPath="url(#chartClip)"
-                />
-              )}
-
-              {pts.map(([x, y], i) =>
-                data[i] > 300 ? (
-                  <circle key={i} cx={x} cy={y} r="4" fill="#6B2D8C" stroke="white" strokeWidth="2" />
-                ) : null
-              )}
-
+              {/* X axis labels */}
               {HOURS.filter(h => h % 4 === 0).map(h => {
                 const x = PAD.left + h * xStep;
                 return (
@@ -293,10 +419,11 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                 );
               })}
 
+              {/* Current hour marker */}
               <line
                 x1={currentX} y1={PAD.top}
                 x2={currentX} y2={PAD.top + INNER_H}
-                stroke="#6B2D8C" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.5"
+                stroke="#6B2D8C" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.4"
               />
               <text
                 x={currentX + 5} y={PAD.top + 11}
@@ -306,6 +433,52 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
                 Ora
               </text>
             </svg>
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-6 mt-4 flex-wrap">
+            {viewMode === 'aggregate' ? (
+              <>
+                <span className="flex items-center gap-1.5 text-xs text-gray-500" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+                  <svg width="20" height="10" viewBox="0 0 20 10">
+                    <line x1="0" y1="5" x2="20" y2="5" stroke="#6B2D8C" strokeWidth="2.5" strokeLinecap="round" />
+                  </svg>
+                  Oggi (totale)
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-gray-400" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+                  <svg width="20" height="10" viewBox="0 0 20 10">
+                    <line x1="0" y1="5" x2="20" y2="5" stroke="#b0b8c1" strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" />
+                  </svg>
+                  Ieri (totale)
+                </span>
+              </>
+            ) : selectedHive ? (
+              <>
+                <span className="flex items-center gap-1.5 text-xs text-gray-500" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: HIVE_COLORS[hives.findIndex(h => h.id === selectedHive.id) % HIVE_COLORS.length] }}
+                  />
+                  {selectedHive.name} — Oggi
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-gray-400" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+                  <svg width="20" height="10" viewBox="0 0 20 10">
+                    <line x1="0" y1="5" x2="20" y2="5" stroke="#b0b8c1" strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" />
+                  </svg>
+                  {selectedHive.name} — Ieri
+                </span>
+              </>
+            ) : (
+              hives.map((hive, idx) => (
+                <span key={hive.id} className="flex items-center gap-1.5 text-xs text-gray-500" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: HIVE_COLORS[idx % HIVE_COLORS.length] }}
+                  />
+                  {hive.name}
+                </span>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -322,7 +495,6 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
             style={{ backgroundColor: 'white' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Coloured header strip */}
             <div
               className="px-6 pt-6 pb-5"
               style={{ backgroundColor: currentSlot.fill }}
@@ -354,7 +526,6 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
               </div>
             </div>
 
-            {/* Body */}
             <div className="px-6 py-5 space-y-4">
               <div>
                 <p
@@ -402,7 +573,6 @@ export default function ActivityChart({ data, previousData }: ActivityChartProps
               )}
             </div>
 
-            {/* Footer */}
             <div className="px-6 pb-5">
               <button
                 onClick={() => setModalOpen(false)}

@@ -85,7 +85,7 @@ export default function DailyReport() {
 
         {/* Weekly bar chart */}
         <div className="flex items-end gap-2 h-28 mb-3">
-          {weeklyVarroaScans.map((scan, i) => {
+          {weeklyVarroaScans.map((scan) => {
             const height = scan.detected > 0 ? (scan.detected / maxVarroa) * 100 : 8;
             const hasVarroa = scan.detected > 0;
             return (

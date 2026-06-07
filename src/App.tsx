@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Sidebar, { ViewType } from './components/Sidebar';
 import HealthIndicator from './components/HealthIndicator';
 import ActivityChart from './components/ActivityChart';
 import DeviceHealth from './components/DeviceHealth';
 import DailyReport from './components/DailyReport';
-import { apiaryData as d } from './data/mockData';
-import { MapPin } from 'lucide-react';
+import AddressSelector from './components/AddressSelector';
+import { mockLocations, aggregateActivity, getWorstDeviceStatus } from './data/mockData';
+import type { Location } from './data/mockData';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('realtime');
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    mockLocations[0] ?? null
+  );
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -21,6 +25,28 @@ export default function App() {
     month: 'long',
     day: 'numeric',
   });
+
+  // Aggregated data for selected location
+  const aggregatedData = useMemo(() => {
+    if (!selectedLocation) return null;
+    return aggregateActivity(selectedLocation.hives);
+  }, [selectedLocation]);
+
+  // Device status (worst across hives)
+  const deviceStatus = useMemo(() => {
+    if (!selectedLocation) return null;
+    return getWorstDeviceStatus(selectedLocation.hives);
+  }, [selectedLocation]);
+
+  if (!selectedLocation || !aggregatedData || !deviceStatus) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f7f4ef' }}>
+        <p className="text-gray-400" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+          Nessuna ubicazione disponibile
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#f7f4ef' }}>
@@ -44,36 +70,59 @@ export default function App() {
                 </h1>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
-                <div
-                  className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium shadow-sm"
-                  style={{ backgroundColor: '#e6faf5', color: '#0d9488', fontFamily: 'Afacad Flux, sans-serif' }}
-                >
-                  <MapPin size={13} strokeWidth={2} />
-                  <span>{d.apiary_name}</span>
-                </div>
+                <AddressSelector
+                  locations={mockLocations}
+                  selectedLocation={selectedLocation}
+                  onSelectLocation={setSelectedLocation}
+                />
               </div>
+            </div>
+
+            {/* Location summary badge */}
+            <div
+              className="rounded-2xl px-4 py-3 flex items-center gap-3"
+              style={{ backgroundColor: 'white', border: '1px solid #f3f4f6' }}
+            >
+              <div
+                className="rounded-xl px-3 py-1.5 text-xs font-semibold"
+                style={{
+                  backgroundColor: selectedLocation.hives.some(h => h.health_score < 85 || h.varroa_detected)
+                    ? '#fef3c7'
+                    : '#dcfce7',
+                  color: selectedLocation.hives.some(h => h.health_score < 85 || h.varroa_detected)
+                    ? '#a16207'
+                    : '#15803d',
+                  fontFamily: 'Afacad Flux, sans-serif',
+                }}
+              >
+                {selectedLocation.hives.length} {selectedLocation.hives.length === 1 ? 'alveare' : 'alveari'}
+              </div>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'Afacad Flux, sans-serif' }}>
+                <span className="font-medium text-gray-700">{selectedLocation.name}</span>
+                {' '}— {selectedLocation.address}
+              </p>
             </div>
 
             {/* Device health */}
             <div className="rounded-2xl px-6 py-4 shadow-sm" style={{ backgroundColor: 'white' }}>
               <DeviceHealth
-                battery={d.device.battery}
-                solarCharging={d.device.solar_charging}
-                signal={d.device.signal}
+                battery={deviceStatus.battery}
+                solarCharging={deviceStatus.solar_charging}
+                signal={deviceStatus.signal}
               />
             </div>
 
             {/* KPI cards + alert */}
             <HealthIndicator
-              totalBees={d.total_bees}
-              temp={d.env_data.temp}
-              humidity={d.env_data.humidity}
+              location={selectedLocation}
+              aggregatedTotal={aggregatedData.totalBees}
             />
 
             {/* Activity Chart */}
             <ActivityChart
-              data={d.hourly_activity}
-              previousData={d.hourly_activity_yesterday}
+              hives={selectedLocation.hives}
+              aggregatedToday={aggregatedData.today}
+              aggregatedYesterday={aggregatedData.yesterday}
             />
           </main>
         ) : (
