@@ -48,6 +48,11 @@ export default function DailyReport() {
     return days;
   }, []);
 
+  const currentPeriod = useMemo(() => {
+    const str = new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }, []);
+
   // Scroll to selected date on mount
   useEffect(() => {
     if (calendarRef.current) {
@@ -233,7 +238,7 @@ export default function DailyReport() {
               className="font-semibold text-sm"
               style={{ color: '#374151', fontFamily: 'Comfortaa, sans-serif' }}
             >
-              {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
+              {currentPeriod}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -275,9 +280,8 @@ export default function DailyReport() {
                 data-date={dateStr}
                 onClick={() => !isFuture && setSelectedDate(dateStr)}
                 disabled={isFuture}
-                className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all min-w-[52px] ${
-                  isSelected ? 'scale-105' : ''
-                } ${isFuture ? 'opacity-40 cursor-not-allowed' : ''}`}
+                className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all min-w-[52px] ${isSelected ? 'scale-105' : ''
+                  } ${isFuture ? 'opacity-40 cursor-not-allowed' : ''}`}
                 style={{
                   backgroundColor: isSelected ? '#6B2D8C' : isTodayDate ? '#f5f0f8' : 'transparent',
                   boxShadow: isSelected ? '0 4px 12px rgba(107, 45, 140, 0.25)' : 'none',
@@ -512,19 +516,6 @@ export default function DailyReport() {
                         </div>
                       </div>
                     )}
-
-                    {/* Action Button */}
-                    <button
-                      className="w-full rounded-2xl py-3 flex items-center justify-center gap-2 font-semibold transition-all hover:opacity-90"
-                      style={{
-                        backgroundColor: '#6B2D8C',
-                        color: 'white',
-                        fontFamily: 'Afacad Flux, sans-serif',
-                      }}
-                    >
-                      <FlaskConical size={16} />
-                      Registra Trattamento
-                    </button>
                   </div>
                 </div>
               ) : (

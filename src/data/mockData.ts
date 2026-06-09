@@ -284,8 +284,8 @@ function generateVarroaHistory(hasActiveVarroa: boolean): VarroaDetection[] {
           confidence: 75 + Math.floor(Math.random() * 20),
           miteCount: 2 + Math.floor(Math.random() * 5),
           images: [
-            'https://images.pexels.com/photos/1630216/pexels-photo-1630216.jpeg?auto=compress&cs=tinysrgb&w=400',
-            'https://images.pexels.com/photos/47356/bumble-bee-bee-insect-47356.jpeg?auto=compress&cs=tinysrgb&w=400',
+            'https://ughettoapicoltura.com/wp-content/uploads/2023/06/Senza-titolo-2.jpg',
+            'https://www.scienzainrete.it/files/styles/molto_grande/public/Ape%20con%20Varroa.jpg?itok=HU4piufY',
           ],
           severity: 'medium',
           notes: 'Presenza di varroa identificata su api operaie. Monitoraggio consigliato.',
@@ -296,7 +296,7 @@ function generateVarroaHistory(hasActiveVarroa: boolean): VarroaDetection[] {
           detected: true,
           confidence: 65 + Math.floor(Math.random() * 25),
           miteCount: 1 + Math.floor(Math.random() * 3),
-          images: ['https://images.pexels.com/photos/1630216/pexels-photo-1630216.jpeg?auto=compress&cs=tinysrgb&w=400'],
+          images: ['https://ughettoapicoltura.com/wp-content/uploads/2023/06/Senza-titolo-2.jpg'],
           severity: 'low',
         });
       } else {
@@ -351,9 +351,9 @@ export const apiaryData = {
     };
   },
   alert_crops: [
-    'https://images.pexels.com/photos/1111318/pexels-photo-1111318.jpeg?auto=compress&cs=tinysrgb&w=400',
-    'https://images.pexels.com/photos/326138/pexels-photo-326138.jpeg?auto=compress&cs=tinysrgb&w=400',
-    'https://images.pexels.com/photos/2260537/pexels-photo-2260537.jpeg?auto=compress&cs=tinysrgb&w=400',
+    'https://ughettoapicoltura.com/wp-content/uploads/2023/06/Senza-titolo-2.jpg',
+    'https://www.scienzainrete.it/files/styles/molto_grande/public/Ape%20con%20Varroa.jpg?itok=HU4piufY',
+    'https://ughettoapicoltura.com/wp-content/uploads/2023/06/Senza-titolo-2.jpg',
   ],
   get hourly_activity() { return aggregateActivity(mockLocations[0].hives).today; },
   get hourly_activity_yesterday() { return aggregateActivity(mockLocations[0].hives).yesterday; },
